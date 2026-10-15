@@ -79,6 +79,16 @@ export default function WorkbenchPage() {
     return result;
   }, [plan.assumptions, assumptionSet]);
 
+  // Weighted effective (net) return across current allocation
+  const weightedNetReturn = useMemo(() => {
+    const ids: AssetId[] = ['cash', 'fd', 'index', 'debt', 'gold'];
+    return ids.reduce((sum, id) => {
+      const alloc = plan.allocation[id] ?? 0;
+      const a = adjustedAssumptions[id];
+      return sum + alloc * (a.annualReturn - a.annualFee);
+    }, 0);
+  }, [plan.allocation, adjustedAssumptions]);
+
   const adjustedPlan = useMemo(
     () => ({ ...plan, assumptions: adjustedAssumptions }),
     [plan, adjustedAssumptions]
@@ -100,9 +110,8 @@ export default function WorkbenchPage() {
   }
 
   function handleAllocationChange(asset: AssetId, fraction: number) {
-    const prev = plan.allocation[asset];
-    recordEdit('allocation', `${asset}:${prev}`, `${asset}:${fraction}`);
     setPrevGoalMonth(firstGoalMonth);
+    recordEdit('allocation', weightedNetReturn, null); // before; after computed post-update
     updateAllocation(asset, fraction);
   }
 
@@ -114,6 +123,21 @@ export default function WorkbenchPage() {
 
   const changeReceipt = useMemo(() => {
     if (!lastEdit) return null;
+    if (lastEdit.field === 'allocation') {
+      const prevReturn = typeof lastEdit.before === 'number' ? lastEdit.before : null;
+      const parts: string[] = [];
+      if (prevReturn !== null) {
+        parts.push(`Allocation updated. Blended return moved from ${(prevReturn * 100).toFixed(1)}% to ${(weightedNetReturn * 100).toFixed(1)}% per year.`);
+      } else {
+        parts.push(`Allocation updated. Blended return: ${(weightedNetReturn * 100).toFixed(1)}% per year.`);
+      }
+      if (prevGoalMonth !== firstGoalMonth) {
+        const prev = prevGoalMonth === null ? 'not reached in this horizon' : `Year ${Math.floor(prevGoalMonth / 12)}`;
+        const next = firstGoalMonth === null ? 'not reached in this horizon' : `Year ${Math.floor(firstGoalMonth / 12)}`;
+        parts.push(`Goal timing moved from ${prev} to ${next}.`);
+      }
+      return parts.join(' ');
+    }
     return describeChange(
       lastEdit.field as string,
       lastEdit.before,
@@ -121,7 +145,7 @@ export default function WorkbenchPage() {
       prevGoalMonth,
       firstGoalMonth
     );
-  }, [lastEdit, prevGoalMonth, firstGoalMonth]);
+  }, [lastEdit, prevGoalMonth, firstGoalMonth, weightedNetReturn]);
 
   return (
     <EditorialShell>
@@ -356,6 +380,25 @@ export default function WorkbenchPage() {
                 onChange={handleAllocationChange}
                 onNormalize={normalizeAllocation}
               />
+
+              {/* Blended return indicator */}
+              <div
+                className="flex items-center justify-between px-3 py-2 rounded-md text-sm"
+                style={{ background: 'var(--forest-wash)', border: '1px solid var(--forest)' }}
+              >
+                <span style={{ color: 'var(--muted-ink)', fontFamily: 'var(--font-ui)' }}>
+                  Blended return (weighted avg)
+                </span>
+                <span
+                  className="tabular-nums font-semibold"
+                  style={{ color: 'var(--forest)', fontFamily: 'var(--font-ui)' }}
+                >
+                  ~{(weightedNetReturn * 100).toFixed(1)}% / yr
+                </span>
+              </div>
+              <p className="text-xs" style={{ color: 'var(--muted-ink)', fontStyle: 'italic' }}>
+                Higher equity allocation → higher blended return → earlier goal date. More equity also means larger possible swings.
+              </p>
             </section>
 
             <FineRule />
@@ -445,11 +488,6 @@ export default function WorkbenchPage() {
             {/* Summary stats */}
             <div className="grid grid-cols-3 gap-4">
               <StatCard
-                label="Goal"
-                value={formatINR(profile.goalAmountINR, true)}
-                sub=""
-              />
-              <StatCard
                 label="First goal date"
                 value={goalMonthLabel(firstGoalMonth, profile.horizonYears)}
                 sub={firstGoalMonth !== null ? `Month ${firstGoalMonth}` : ''}
@@ -462,6 +500,11 @@ export default function WorkbenchPage() {
                   true
                 )}
                 sub={`After ${profile.horizonYears} yr`}
+              />
+              <StatCard
+                label="Blended return"
+                value={`~${(weightedNetReturn * 100).toFixed(1)}% / yr`}
+                sub="Weighted net avg"
               />
             </div>
 
