@@ -1,0 +1,128 @@
+/* Design tokens — Waymark */
+@import "tailwindcss";
+
+@source "../**/*.{ts,tsx}";
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+/* CSS custom properties — used directly via var() in JSX inline styles */
+:root {
+  --canvas: #F6F3EC;
+  --paper: #FFFEFA;
+  --ink: #1D2724;
+  --muted-ink: #59635E;
+  --rule: #D6D5CC;
+  --forest: #315F51;
+  --forest-wash: #E4ECE6;
+  --clay: #AD6450;
+  --clay-wash: #F4E7E1;
+  --gold-ink: #8C6B34;
+  --night: #17221F;
+
+  --font-editorial: 'Newsreader', Georgia, serif;
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Tailwind v4 theme — makes color/font utility classes available */
+@theme {
+  --color-canvas: #F6F3EC;
+  --color-paper: #FFFEFA;
+  --color-ink: #1D2724;
+  --color-muted-ink: #59635E;
+  --color-rule: #D6D5CC;
+  --color-forest: #315F51;
+  --color-forest-wash: #E4ECE6;
+  --color-clay: #AD6450;
+  --color-clay-wash: #F4E7E1;
+  --color-gold-ink: #8C6B34;
+  --color-night: #17221F;
+
+  --font-family-editorial: 'Newsreader', Georgia, serif;
+  --font-family-ui: 'DM Sans', system-ui, sans-serif;
+
+  --font-size-hero: clamp(3rem, 7vw, 7rem);
+  --font-size-display: clamp(2rem, 5vw, 4.5rem);
+  --font-size-chapter: clamp(1.75rem, 3.5vw, 3rem);
+  --font-size-section: clamp(1.5rem, 2.5vw, 2rem);
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: #F6F3EC;
+  color: #1D2724;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid #315F51;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Utility classes used in JSX */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.fine-rule {
+  border: none;
+  border-top: 1px solid #D6D5CC;
+  margin: 0;
+}
+
+.chapter-eyebrow {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #59635E;
+}
+
+/* Max-width utilities */
+.max-w-reading { max-width: 780px; }
+.max-w-content { max-width: 1440px; }
+
+/* Font size utilities */
+.text-hero { font-size: clamp(3rem, 7vw, 7rem); }
+.text-display { font-size: clamp(2rem, 5vw, 4.5rem); }
+.text-chapter { font-size: clamp(1.75rem, 3.5vw, 3rem); }
+.text-section { font-size: clamp(1.5rem, 2.5vw, 2rem); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D6D5CC; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #59635E; }
+
+/* Print */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
